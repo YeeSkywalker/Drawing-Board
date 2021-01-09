@@ -31,7 +31,7 @@ void freeState(state *s);
 
 // Extract an opcode from a byte (two most significant bits).
 int getOpcode(byte b);
-
+ 
 // Extract an operand (-32..31) from the rightmost 6 bits of a byte.
 int getOperand(byte b);
 
@@ -46,3 +46,4 @@ bool processSketch(display *d, void *data, const char pressedKey);
 
 // View a sketch file in a 200x200 pixel window given the filename
 void view(char *filename);
+

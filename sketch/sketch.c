@@ -7,31 +7,97 @@
 
 // Allocate memory for a drawing state and initialise it
 state *newState() {
-  //TO DO
-    malloc();
-  return NULL; // this is a placeholder only
+    // TO DO
+    newState = (state *) malloc(9);
 }
 
 // Release all memory associated with the drawing state
 void freeState(state *s) {
-  //TO DO
+    // TO DO
+    free(s);
 }
 
 // Extract an opcode from a byte (two most significant bits).
 int getOpcode(byte b) {
-  //TO DO
-  return 0; // this is a placeholder only
+    // TO DO
+    char leftMost[3];
+    
+    for (int a = 0; a < 2; a++ ) {
+        leftMost[a] = b[a];
+    }
+    
+    int operandCode = atoi(leftMost);
+    
+    switch (operandCode) {
+        case 0:
+            return DX;
+            break;
+            
+        case 1:
+            return DY;
+            break;
+        
+        case 10:
+            return TOOL;
+        
+        case 11:
+            return DATA;
+            
+        default:
+            break;
+    }
+    
 }
 
 // Extract an operand (-32..31) from the rightmost 6 bits of a byte.
 int getOperand(byte b) {
-  //TO DO
-  return 0; // this is a placeholder only
+    //TO DO
+    char rightMost[3];
+    
+    for (int c = 0; c < 6; c++ ) {
+        rightMost[c] = b[c];
+    }
+    
+    int operandCode = atoi(rightMost);
+    
+    switch (operandCode) {
+        case 0:
+            return NONE;
+            break;
+            
+        case 1:
+            return LINE;
+            break;
+        
+        case 10:
+            return BLOCK;
+        
+        case 11:
+            return COLOUR;
+            
+        case 100:
+            return TARGETX;
+        
+        case 101:
+            return TARGETY;
+        
+        case 110:
+            return SHOW;
+        
+        case 111:
+            return PAUSE;
+        
+        case 1000:
+            return NEXTFRAME;
+            
+        default:
+            break;
+    }
 }
 
 // Execute the next byte of the command sequence.
 void obey(display *d, state *s, byte op) {
-  //TO DO
+    //TO DO
 }
 
 // Draw a frame of the sketch file. For basic and intermediate sketch files
@@ -52,21 +118,21 @@ bool processSketch(display *d, void *data, const char pressedKey) {
 
 // View a sketch file in a 200x200 pixel window given the filename
 void view(char *filename) {
-  display *d = newDisplay(filename, 200, 200);
-  state *s = newState();
-  run(d, s, processSketch);
-  freeState(s);
-  freeDisplay(d);
+    display *d = newDisplay(filename, 200, 200);
+    state *s = newState();
+    run(d, s, processSketch);
+    freeState(s);
+    freeDisplay(d);
 }
 
 // Include a main function only if we are not testing (make sketch),
 // otherwise use the main function of the test.c file (make test).
 #ifndef TESTING
 int main(int n, char *args[n]) {
-  if (n != 2) { // return usage hint if not exactly one argument
-    printf("Use ./sketch file\n");
-    exit(1);
-  } else view(args[1]); // otherwise view sketch file in argument
-  return 0;
+    if (n != 2) { // return usage hint if not exactly one argument
+        printf("Use ./sketch file\n");
+        exit(1);
+    } else view(args[1]); // otherwise view sketch file in argument
+    return 0;
 }
 #endif
