@@ -26,9 +26,9 @@ int getOpcode(byte b) {
         leftMost[a] = b[a];
     }
     
-    int operandCode = atoi(leftMost);
+    int opcode = atoi(leftMost);
     
-    switch (operandCode) {
+    switch (opcode) {
         case 0:
             return DX;
             break;
