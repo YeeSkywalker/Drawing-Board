@@ -81,6 +81,40 @@ int getOperand(byte b) {
 // Execute the next byte of the command sequence.
 void obey(display *d, state *s, byte op) {
     //TO DO
+    int opcode = getOpcode(op), operand = getOperand(op);
+    
+    switch (opcode) {
+        case DX:
+            s->tx += operand;
+            break;
+            
+        case DY:
+            s->ty += operand;
+            break;
+        
+        case TOOL:
+            switch (operand) {
+                case NONE:
+                    s->tool = TOOL;
+                    break;
+                
+                case LINE:
+                    s->tool = LINE;
+                    break;
+                    
+                default:
+                    break;
+            }
+        default:
+            break;
+    }
+    
+    if (s->tool == LINE) {
+        line(*d, s->x, s->y, s->tx, s->y);
+    }
+    
+    s->x = s->tx;
+    s->y = s->ty;
 }
 
 // Draw a frame of the sketch file. For basic and intermediate sketch files
@@ -95,8 +129,15 @@ bool processSketch(display *d, void *data, const char pressedKey) {
     //NOTE: TO GET THE FILENAME... char *filename = getName(d);
     //NOTE: DO NOT FORGET TO CALL show(d); AND TO RESET THE DRAWING STATE APART FROM
     //      THE 'START' FIELD AFTER CLOSING THE FILE
+    if (data == NULL) {
+        return (pressedKey == 27)
+    }
+    
+    char *filename = getName(d);
+    
+    FILE *file = fopen();
 
-  return (pressedKey == 27);
+    return (pressedKey == 27);
 }
 
 // View a sketch file in a 200x200 pixel window given the filename
