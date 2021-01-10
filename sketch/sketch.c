@@ -31,20 +31,9 @@ void freeState(state *s) {
 // Extract an opcode from a byte (two most significant bits).
 int getOpcode(byte b) {
     // TO DO
-    char leftMost[2]；
-    int opcode, decimal = 0, i = 0, remainder;
-    
-    leftMost = b >> 2;
-    opcode = atoi(leftMost);
-    
-    while (opcode != 0) {
-        remainder = opcode % 10;
-        opcode /= 10;
-        decimal += remainder * pow(2, i);
-        ++i;
-    }
-    
-    return decimal;
+    b = b >> 6;
+    int opcode = (int)b;
+    return opcode;
     
 }
 
