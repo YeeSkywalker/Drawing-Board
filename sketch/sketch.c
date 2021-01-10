@@ -34,15 +34,21 @@ int getOpcode(byte b) {
     b = b >> 6;
     int opcode = (int)b;
     return opcode;
-    
 }
 
 // Extract an operand (-32..31) from the rightmost 6 bits of a byte.
 int getOperand(byte b) {
     //TO DO
-    unsigned
-    b = b >> 6;
-    int operand = (int)b;
+    unsigned char signExtend = 0x20;
+    signed char a;
+    b = b << 2;
+    b = b >> 2;
+    if ((signExtend & b) != 0x00) {
+        unsigned char signExpression = 0xc0;
+        a = (b | signExpression);
+    }
+    else a = b;
+    int operand = (int)a;
     return operand;
 }
 
@@ -79,7 +85,7 @@ void obey(display *d, state *s, byte op) {
     }
     
     if (s->tool == LINE) {
-        line(*d, s->x, s->y, s->tx, s->y);
+        line(d, s->x, s->y, s->tx, s->y);
     }
     
     s->x = s->tx;
@@ -99,13 +105,13 @@ bool processSketch(display *d, void *data, const char pressedKey) {
     //NOTE: DO NOT FORGET TO CALL show(d); AND TO RESET THE DRAWING STATE APART FROM
     //      THE 'START' FIELD AFTER CLOSING THE FILE
     if (data == NULL) {
-        return (pressedKey == 27)
+        return (pressedKey == 27);
     }
     
     // From Test
     char *filename = getName(d);
     state *s = (state *) data;
-    FILE *file = fopen(&filename, "rb");
+    FILE *file = fopen(filename, "rb");
     
     while (!feof(file)) {
         byte command = getc(file);
