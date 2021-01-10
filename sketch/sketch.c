@@ -31,13 +31,10 @@ void freeState(state *s) {
 // Extract an opcode from a byte (two most significant bits).
 int getOpcode(byte b) {
     // TO DO
-    char leftMost[3];
+    char leftMost[2]；
     int opcode, decimal = 0, i = 0, remainder;
     
-    for (int a = 0; a < 3; a++ ) {
-        leftMost[a] = b[a];
-    }
-    
+    leftMost = b >> 2;
     opcode = atoi(leftMost);
     
     while (opcode != 0) {
@@ -54,34 +51,17 @@ int getOpcode(byte b) {
 // Extract an operand (-32..31) from the rightmost 6 bits of a byte.
 int getOperand(byte b) {
     //TO DO
-    char rightMost[7];
-    int operrand, decimal, i = 0, remainder;
-    
-    for (int c = 0; c < 7; c++ ) {
-        rightMost[c] = b[2 + c];
-    }
-    
-    if (rightmost[0] == 1) {
-        decimal = -32;
-    }
-    else decimal = 0;
-    
-    operand = atoi(rightMost);
-    
-    while (operand != 0) {
-        remainder = operand % 10;
-        operand /= 10;
-        decimal += remainder * pow(2, i);
-        ++i;
-    }
-    
-    return decimal;
+    unsigned
+    b = b >> 6;
+    int operand = (int)b;
+    return operand;
 }
 
 // Execute the next byte of the command sequence.
 void obey(display *d, state *s, byte op) {
     //TO DO
     int opcode = getOpcode(op), operand = getOperand(op);
+    printf("opcode is %d, operand is %d", opcode, operand);
     
     switch (opcode) {
         case DX:
@@ -133,10 +113,18 @@ bool processSketch(display *d, void *data, const char pressedKey) {
         return (pressedKey == 27)
     }
     
+    // From Test
     char *filename = getName(d);
+    state *s = (state *) data;
+    FILE *file = fopen(&filename, "rb");
     
-    FILE *file = fopen();
-
+    while (!feof(file)) {
+        byte command = getc(file);
+        obey(d, s, command);
+    }
+    
+    fclose(file);
+    show(d);
     return (pressedKey == 27);
 }
 
