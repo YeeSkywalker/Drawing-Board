@@ -4,11 +4,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 
 // Allocate memory for a drawing state and initialise it
 state *newState() {
     // TO DO
-    newState = (state *) malloc(9);
+    state *s = malloc(sizeof(state));
+    s->x = 0;
+    s->y = 0;
+    s->tx = 0;
+    s->ty = 0;
+    s->tool = LINE;
+    s->start = 0;
+    s->data = 0;
+    s->end = false;
+    
+    return s;
 }
 
 // Release all memory associated with the drawing state
@@ -21,78 +32,50 @@ void freeState(state *s) {
 int getOpcode(byte b) {
     // TO DO
     char leftMost[3];
+    int opcode, decimal = 0, i = 0, remainder;
     
-    for (int a = 0; a < 2; a++ ) {
+    for (int a = 0; a < 3; a++ ) {
         leftMost[a] = b[a];
     }
     
-    int opcode = atoi(leftMost);
+    opcode = atoi(leftMost);
     
-    switch (opcode) {
-        case 0:
-            return DX;
-            break;
-            
-        case 1:
-            return DY;
-            break;
-        
-        case 10:
-            return TOOL;
-        
-        case 11:
-            return DATA;
-            
-        default:
-            break;
+    while (opcode != 0) {
+        remainder = opcode % 10;
+        opcode /= 10;
+        decimal += remainder * pow(2, i);
+        ++i;
     }
+    
+    return decimal;
     
 }
 
 // Extract an operand (-32..31) from the rightmost 6 bits of a byte.
 int getOperand(byte b) {
     //TO DO
-    char rightMost[3];
+    char rightMost[7];
+    int operrand, decimal, i = 0, remainder;
     
-    for (int c = 0; c < 6; c++ ) {
-        rightMost[c] = b[c];
+    for (int c = 0; c < 7; c++ ) {
+        rightMost[c] = b[2 + c];
     }
     
-    int operandCode = atoi(rightMost);
-    
-    switch (operandCode) {
-        case 0:
-            return NONE;
-            break;
-            
-        case 1:
-            return LINE;
-            break;
-        
-        case 10:
-            return BLOCK;
-        
-        case 11:
-            return COLOUR;
-            
-        case 100:
-            return TARGETX;
-        
-        case 101:
-            return TARGETY;
-        
-        case 110:
-            return SHOW;
-        
-        case 111:
-            return PAUSE;
-        
-        case 1000:
-            return NEXTFRAME;
-            
-        default:
-            break;
+    if (rightmost[0] == 1) {
+        decimal = -32;
     }
+    else decimal = 0;
+    
+    operand = atoi(rightMost);
+    
+    while (operand != 0) {
+        remainder = operand % 10;
+        operand /= 10;
+        decimal += remainder * pow(2, i);
+        ++i;
+    }
+    
+    return decimal;
 }
 
 // Execute the next byte of the command sequence.
