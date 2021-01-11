@@ -16,7 +16,7 @@ state *newState() {
     s->ty = 0;
     s->tool = LINE;
     s->start = 0;
-    s->data = 0;
+    s->data = 0x00000000;
     s->end = false;
     
     return s;
@@ -39,16 +39,27 @@ int getOpcode(byte b) {
 // Extract an operand (-32..31) from the rightmost 6 bits of a byte.
 int getOperand(byte b) {
     //TO DO
-    unsigned char signExtend = 0x20;
+    byte signExtend = 0x20;
     signed char a;
+    int opcode = getOpcode(b);
     b = b << 2;
     b = b >> 2;
-    if ((signExtend & b) != 0x00) {
-        unsigned char signExpression = 0xc0;
-        a = (b | signExpression);
+    int operand;
+    if (opcode == DATA) {
+        operand = (int)b;
+        return operand;
     }
-    else a = b;
-    int operand = (int)a;
+    if ((signExtend & b) != 0x00) {
+        byte signExpression = 0x1f;
+        a = (b & signExpression);
+        operand = -32 + (int)a;
+    }
+    
+    else {
+        a = b;
+        operand = (int)a;
+    }
+    printf("%d\n", operand);
     return operand;
 }
 
@@ -56,8 +67,8 @@ int getOperand(byte b) {
 void obey(display *d, state *s, byte op) {
     //TO DO
     int opcode = getOpcode(op), operand = getOperand(op);
-    printf("opcode is %d, operand is %d", opcode, operand);
-    
+    //printf("opcode is %d, operand is %d", opcode, operand);
+   
     switch (opcode) {
         case DX:
             s->tx += operand;
@@ -65,31 +76,67 @@ void obey(display *d, state *s, byte op) {
             
         case DY:
             s->ty += operand;
+            s->end = true;
             break;
         
         case TOOL:
             switch (operand) {
                 case NONE:
-                    s->tool = TOOL;
+                    s->tool = NONE;
+                    s->data = 0x00000000;
                     break;
                 
                 case LINE:
                     s->tool = LINE;
+                    s->data = 0x00000000;
+                    break;
+                    
+                case BLOCK:
+                    s->tool = BLOCK;
+                    s->data = 0x0000000;
+                    break;
+                    
+                case COLOUR:
+                    colour(d, s->data);
+                    s->data = 0x00000000;
+                    break;
+                    
+                case TARGETX:
+                    s->tx = (int)s->data;
+                    s->data = 0x00000000;
+                    break;
+                
+                case TARGETY:
+                    s->ty = (int)s->data;
+                    s->data = 0x00000000;
                     break;
                     
                 default:
                     break;
             }
+        
+        case DATA:
+            s->data = s->data << 6;
+            s->data = s->data | operand;
+            
         default:
             break;
     }
     
-    if (s->tool == LINE) {
-        line(d, s->x, s->y, s->tx, s->y);
+    if (s->tool == LINE && s->end == true) {
+        line(d, s->x, s->y, s->tx, s->ty);
     }
     
-    s->x = s->tx;
-    s->y = s->ty;
+    if (s->tool == BLOCK && s->end == true) {
+        block(d, s->x, s->y, (s->tx - s->x), (s->ty - s->y));
+    }
+    
+    if (s->end == true) {
+        s->end = false;
+        s->x = s->tx;
+        s->y = s->ty;
+    }
+    
 }
 
 // Draw a frame of the sketch file. For basic and intermediate sketch files
@@ -107,19 +154,28 @@ bool processSketch(display *d, void *data, const char pressedKey) {
     if (data == NULL) {
         return (pressedKey == 27);
     }
-    
     // From Test
     char *filename = getName(d);
     state *s = (state *) data;
     FILE *file = fopen(filename, "rb");
+   
     
     while (!feof(file)) {
         byte command = getc(file);
         obey(d, s, command);
     }
     
+    s->x = 0;
+    s->y = 0;
+    s->tx = 0;
+    s->ty = 0;
+    s->tool = LINE;
+    s->start = 0;
+    s->data = 0;
+    s->end = false;
     fclose(file);
     show(d);
+    
     return (pressedKey == 27);
 }
 
