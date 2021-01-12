@@ -59,7 +59,6 @@ int getOperand(byte b) {
         a = b;
         operand = (int)a;
     }
-    printf("%d\n", operand);
     return operand;
 }
 
@@ -67,8 +66,7 @@ int getOperand(byte b) {
 void obey(display *d, state *s, byte op) {
     //TO DO
     int opcode = getOpcode(op), operand = getOperand(op);
-    //printf("opcode is %d, operand is %d", opcode, operand);
-   
+    
     switch (opcode) {
         case DX:
             s->tx += operand;
@@ -114,10 +112,12 @@ void obey(display *d, state *s, byte op) {
                 default:
                     break;
             }
+            break;
         
         case DATA:
             s->data = s->data << 6;
             s->data = s->data | operand;
+            break;
             
         default:
             break;
