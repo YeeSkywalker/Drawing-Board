@@ -108,6 +108,18 @@ void obey(display *d, state *s, byte op) {
                     s->ty = (int)s->data;
                     s->data = 0x00000000;
                     break;
+                
+                case SHOW:
+                    show(d);
+                    break;
+                
+                case PAUSE:
+                    pause(d, (int)s->data);
+                    break;
+                
+                case NEXTFRAME:
+                    s->end = true;
+                    return;
                     
                 default:
                     break;
@@ -158,11 +170,27 @@ bool processSketch(display *d, void *data, const char pressedKey) {
     char *filename = getName(d);
     state *s = (state *) data;
     FILE *file = fopen(filename, "rb");
-   
+    unsigned int position = 0x00;
     
     while (!feof(file)) {
         byte command = getc(file);
-        obey(d, s, command);
+        if (s->start != 0x0000) {
+            if (s->start == command) {
+                s->start = 0x0000;
+            }
+        }
+        else {
+            obey(d, s, command);
+            if (s->end == true) {
+                show(d);
+                unsigned int nextFrame = 0x00;
+                nextFrame = next | command;
+                nextFrame = nextFrame << 24;
+                nextFrame = nextFrame | position;
+                s->start = nextFrame;
+                break;
+            }
+        }
     }
     
     s->x = 0;
@@ -170,11 +198,12 @@ bool processSketch(display *d, void *data, const char pressedKey) {
     s->tx = 0;
     s->ty = 0;
     s->tool = LINE;
-    s->start = 0;
-    s->data = 0;
+    s->data = 0x00;
     s->end = false;
     fclose(file);
-    show(d);
+    if (s->start == 0x00) {
+        show(d);
+    }
     
     return (pressedKey == 27);
 }
