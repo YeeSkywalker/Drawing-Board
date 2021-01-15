@@ -171,23 +171,23 @@ bool processSketch(display *d, void *data, const char pressedKey) {
     state *s = (state *) data;
     FILE *file = fopen(filename, "rb");
     unsigned int position = 0x00;
+    bool shown = false;
+    
     
     while (!feof(file)) {
         byte command = getc(file);
-        if (s->start != 0x0000) {
-            if (s->start == command) {
-                s->start = 0x0000;
+        if (s->start != position) {
+            if (command == 0x88) {
+                position += 1;
             }
         }
         else {
             obey(d, s, command);
             if (s->end == true) {
                 show(d);
-                unsigned int nextFrame = 0x00;
-                nextFrame = next | command;
-                nextFrame = nextFrame << 24;
-                nextFrame = nextFrame | position;
-                s->start = nextFrame;
+                shown = true;
+                position += 1;
+                s->start = position;
                 break;
             }
         }
@@ -201,9 +201,11 @@ bool processSketch(display *d, void *data, const char pressedKey) {
     s->data = 0x00;
     s->end = false;
     fclose(file);
-    if (s->start == 0x00) {
+    if (shown == false) {
+        s->start = 0x0000000;
         show(d);
     }
+    
     
     return (pressedKey == 27);
 }
